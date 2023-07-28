@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="This is free online Audio Editor. The audio editor can 
+    perform audio files merging/joining, trimming and cutting audio. You can also undo previous work.">
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js"></script>
+    <script src="file.js"></script>
+    <script src="play.js"></script>
+    <script src="trim.js"></script>
+    <script src="cut.js"></script>
+    <script src="export.js"></script>
+    <script src="generatewave.js"></script>
+    <script src="undo.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Free Audio Editor with Undo Feature</title>
+</head>
+<body>
+    <div id = "navbarmain">
+<div id = "navbar">
+    <a href="index.html">Without Undo Feature </a>
+    <a  href="withundo.html">With Undo Feature </a>
+    <a href="report.html">Report Bug </a>
+
+</div>
+
+<div id = "heavyfun">
+    <button class="button1" onclick="cleardata()">Clear Data</button>
+    <button class="button1" onclick="exportdata()">Export</button>
+</div>
+</div>
+    <h1>Online Audio Editor with Undo Feature || Press "z" to Undo</h1>
+    <input  id = "file" type="file" onchange="myFunction()"/>
+    <br/>
+    <span id="status"></span>
+    <br/>
+    <div>
+    <span>Error: </span>
+    <span style="color:red" id = "error"></span>
+</div>
+<br/>
+    <div id = "audioinfo">
+    <span >Audio Time: </span>
+    <span id = 'timer'>0</span>
+    <span  class ="info">Audio Duration: </span>
+    <span   id = 'duration'>0</span>
+    <br id = "linebreak"/>
+    <span id ="totallength1"  class="info" >Total Length: </span>
+    <span  id = 'totallength'>0</span>
+    <span  class="info">Selected Length: </span>
+    <span  id = 'selectedlength'>0</span>
+</div>
+
+    <div style=" background-color:lightblue;padding:15px;">
+        
+        <div id = "menu">
+<button class="button2" id ="play" onclick="play()">Play</button>
+<button class="button2" id ="stop" onclick="stop()">Stop</button>
+<button class="button2" id ="trim1" onclick="trim()">Trim</button>
+<button class="button2" id="cut1" onclick="cut()">Cut</button>
+<button class="button2" id="generatewave" onclick="generatewave()">Generate Waveform</button>
+<button class="button2" id="undo" onclick="undodata()">Undo</button>
+<button class="button2" id="exportdata1" onclick="exportdata()">Export</button>
+    </div>
+    <div id ="information">
+    <h2>Playing, Cutting and Trimming Audio</h2>
+
+    <p>To Play, Cut or Trim an audio file, you can specify the starting 
+        and ending points. For instance, if you want to Play, Cut or Trim the audio from the 
+        10th to the 20th second, simply input "10" as the starting point and "20" 
+        as the ending point, and then click the "Play, Cut or Trim" button. Just export the file by clicking 
+        on "Export button" in MP3 format after you finish editing.  
+        Every thing is done in JavaScript so you may dont need internet to use this app.
+    </p>
+</div>
+<label>Starting Point in Seconds (you can specify decimal values between 0 and video duration)</label>
+<br/>
+<input class="input" oninput="keydownfun(this)" id = "start" type="text"/>
+<br/>
+<br/>
+<label>Ending Point in Seconds (you can specify decimal values between 0 and video duration)</label>
+<br/>
+<input class="input" oninput="keydownfun(this)" id = "end" type="text"/>
+<br/>
+<br/>
+
+<button class="button" id ="play" onclick="play()">Play</button>
+<button class="button" id ="stop" onclick="stop()">Stop</button>
+<button class="button" id ="trim1" onclick="trim()">Trim</button>
+<button class="button" id="cut1" onclick="cut()">Cut</button>
+<button class="button" id="undo" onclick="undodata()">Undo</button>
+<button class="button" id="generatewave" onclick="generatewave()">Generate Waveform</button>
+
+
+
+</div>
+    <h2>How to Use</h2>
+
+    <iframe class="iframe" src="https://www.youtube.com/embed/Wq9ALsLBYMY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<p>To use this app, you need to select an audio file by clicking "Choose File". After selecting the file, put the starting and ending points. The starting point is the starting value in seconds from where you want to cut or trim the audio, and the ending point is the ending value in seconds.
+After providing the starting and ending points, you have two options: trim or cut the audio.
+
+</p>
+<h3>Difference between Trim and Cut</h3>
+<p>Trimming means removing a specific part of the audio. For example, if your audio is 60 seconds long, and you want to trim 10 seconds in the middle, let's say you want to trim the audio from 10 seconds to 20 seconds. The trimming operation will remove the audio from 10 seconds to 20 seconds and save the rest of the audio.
+</p>
+<p>Cutting audio means you will get a specific part of the audio. For example, if you want to cut the audio from 10 seconds to 20 seconds, the cutting operation will return an audio file containing the audio between 10 seconds to 20 seconds.
+</p>
+
+
+<h3>Audio files Merging/Joining</h3>
+
+<p>
+    This application has the capability to join or merge multiple audio files together. 
+    To accomplish this task, all you have to do is select the audio files you want to 
+    combine. Simply press the "Choose file" button to pick a new file, and it will 
+    automatically be added to the previously selected file.
+</p>
+
+<h3>Exporting Audio</h3>
+<p>Once you done editing you can export file into and mp3 format by clicking "Export" button</p>
+<p>Report any problem at <span style="color:blue;">contact@musk-technology.com</span></p>
+    <script>
+
+        var array = [];
+        var audiocontext;
+        var source;
+        var time=0;
+        let intervalid;
+        var check = null;
+        var sourcecheck = null;
+        var sourceduration = 0;
+        
+        var undo=[];
+
+
+
+        
+        document.addEventListener("keydown", function(event) {
+if (event.key === "z"){
+
+   
+
+    
+
+    document.getElementById("error").innerHTML = "";
+    if (undo.length >0){
+
+        if (source){
+    source.stop()
+}
+
+clearInterval(intervalid);
+time = 0;
+
+array = undo[undo.length-1];
+undo.pop();
+
+
+document.getElementById("totallength").innerHTML=array.length;
+source = audiocontext.createBufferSource();
+var array1 = new Float32Array(array);
+var audiobuffer = audiocontext.createBuffer(1, array.length, audiocontext.sampleRate);
+var ab1=  audiobuffer.getChannelData(0);
+ab1.set(array);
+
+source.buffer=audiobuffer;
+source.connect(audiocontext.destination);
+source.start(0);
+sourceduration = source.buffer.duration;
+document.getElementById("duration").innerHTML = source.buffer.duration;
+if ( source.buffer.duration >=1){
+intervalid =   setInterval(()=>{
+time++;
+document.getElementById("timer").innerHTML = time;
+if (time === parseInt(source.buffer.duration)){
+clearInterval(intervalid);
+}
+}, 1000);
+}
+
+}
+}
+});
+       
+        function keydownfun(){
+
+            if (check!==null){
+
+            var start =parseFloat(document.getElementById("start").value)
+            var end =parseFloat(document.getElementById("end").value);
+            var index = end*audiocontext.sampleRate - start*audiocontext.sampleRate;
+            document.getElementById("selectedlength").innerHTML=parseInt(index);
+        }
+
+        document.getElementById("error").innerHTML = "";
+        }
+
+
+
+
+
+function stop(){
+if (source){
+    source.stop();
+    clearInterval(intervalid);
+}
+}
+
+
+
+
+
+
+
+ 
+
+       
+
+
+function cleardata(){
+    if (source){
+        source.stop();
+    }
+    clearInterval(intervalid);
+
+    array = null;
+    time = 0;
+
+    document.getElementById("timer").innerHTML = '';
+    document.getElementById("duration").innerHTML = "";
+    document.getElementById("totallength").innerHTML="";
+    document.getElementById("selectedlength").innerHTML = "";
+}
+    </script>
+</body>
+</html>
